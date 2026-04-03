@@ -1,0 +1,199 @@
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+
+exp_name: "qwen3-4B-rubrics2Token-config"
+seed: 42
+logging_dir: ./output/logs
+output_dir: ./output
+system_envs:
+  USE_MODELSCOPE: '1'
+
+checkpoint_config:
+  type: mos
+
+track_with: ml_tracker
+tracker_kwargs:
+  project: roll_qwen3_4B_rubris2tokens
+
+num_gpus_per_node: 8
+
+max_steps: 500
+save_steps: 20
+logging_steps: 1
+eval_steps: 20
+resume_from_checkpoint: false
+
+rollout_batch_size: 64  # prompt
+prompt_length: 2048
+response_length: 4096
+
+num_return_sequences_in_group: 8
+ppo_epochs: 1
+adv_estimator: "grpo"
+
+# clip
+pg_clip: 0.2                    # 裁剪范围
+pg_clip_low: 0.2                # 下界裁剪（可选）
+pg_clip_high: 0.27              # 上界裁剪（可选）
+use_pg_clip_range: true         # 是否使用不对称裁剪
+dual_clip_loss: false           # 是否启用双重裁剪
+
+# normalize
+norm_mean_type: group
+norm_std_type: group
+
+# data mask
+max_len_mask: false
+difficulty_mask: false
+difficulty_low_threshold: -1
+difficulty_high_threshold: 1
+error_max_len_clip: false
+
+# data weight
+difficulty_loss_weight: false
+length_loss_weight: false
+
+# reward
+init_kl_coef: 0
+enable_reference: false
+add_token_level_kl: false
+reward_union_type: all-or-nothing
+
+# advantage
+whiten_advantages: false
+
+# rubric2token
+rubric_token_level_reward_method: add # mix, add
+rubric_token_level_reward_weight: 0.5
+rubric_norm_type: token_only_adv-rubrics_mean # rubric_token_mean-groups_adv, group_token_adv-rubrics_mean, token_only_adv-rubrics_mean, group_adv-token_softmax-rubrics-sum
+
+pretrain: Qwen/Qwen3-4B-Instruct-2507
+reward_pretrain: deepseek-ai/DeepSeek-V3.1  # here
+discriminator_pretrain: ./qwen3-4b-token-discriminator
+
+actor_train:
+  model_args:
+    disable_gradient_checkpointing: false
+    dtype: bf16
+    model_type: ~
+  training_args:
+    learning_rate: 1.0e-6
+    weight_decay: 0
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 2
+    warmup_steps: 20
+    num_train_epochs: 50
+  data_args:
+    template: qwen3
+    file_name:
+      - data/HIR_trainv1_rubrics_processed.jsonl
+    domain_interleave_probs:
+      llm_judge: 1.0
+    dataset_dir: data
+    messages: messages
+    interleave_probs: "1.0"
+    preprocessing_num_workers: 16
+  strategy_args:
+    strategy_name: megatron_train
+    strategy_config:
+      tensor_model_parallel_size: 1
+      pipeline_model_parallel_size: 1
+      expert_model_parallel_size: 1
+      use_distributed_optimizer: true
+      recompute_granularity: full
+  device_mapping: list(range(0,32))
+  infer_batch_size: 4
+
+actor_infer:
+  model_args:
+    disable_gradient_checkpointing: true
+    dtype: bf16
+  generating_args:
+    max_new_tokens: ${response_length}
+    top_p: 0.99
+    top_k: 100
+    num_beams: 1
+    temperature: 0.99
+    num_return_sequences: ${num_return_sequences_in_group}
+  data_args:
+    template: qwen3
+  strategy_args:
+    strategy_name: vllm
+    strategy_config:
+      gpu_memory_utilization: 0.8
+      block_size: 16
+      max_model_len: 8000
+  device_mapping: list(range(0,32))
+  infer_batch_size: 1
+
+rewards:
+  llm_judge:
+    worker_cls: roll.pipeline.rlvr.rewards.rubrics_llm_judge_reward_worker.RubricsLLMJudgeRewardWorker
+    judge_model_type: inference
+    tag_included: [llm_judge]
+    model_args:
+      model_name_or_path: ${reward_pretrain}
+      disable_gradient_checkpointing: true
+      dtype: bf16
+    generating_args:
+      max_new_tokens: 512
+      top_p: 0.01
+      top_k: 1
+      num_beams: 1
+      temperature: 0.01
+      num_return_sequences: 1
+    data_args:
+      template: native
+    strategy_args:
+      strategy_name: vllm
+      strategy_config:
+        tensor_parallel_size: 8
+        # enable_expert_parallel: true
+        gpu_memory_utilization: 0.9
+        block_size: 16
+        max_model_len: 8192
+        load_format: auto
+    num_gpus_per_worker: 8
+    device_mapping: list(range(32,64))
+    infer_batch_size: 4
+
+discriminator:
+  worker_cls: roll.pipeline.rlvr.rewards.discriminator_worker.DiscriminatorWorker
+  model_args:
+    attn_implementation: fa2
+    model_name_or_path: ${discriminator_pretrain}
+    disable_gradient_checkpointing: true
+    dtype: bf16
+    model_type: auto_token_classification
+    num_labels: 1
+  strategy_args:
+    strategy_name: hf_infer
+    strategy_config: ~
+  device_mapping: list(range(0,16))
+  infer_batch_size: 4
+
+validation:
+  generating_args:
+    max_new_tokens: ${response_length}
+    top_p: 0.99
+    top_k: 100
+    num_beams: 1
+    temperature: 0.99
+    num_return_sequences: 1
+  data_args:
+    template: qwen3
+
+validation_benchmark:
+  enabled: false
+  name: [ifeval, ifbench, muldimif]
+  input_data:
+    ifeval: Benchmark/instruction_following_eval/data/input_data.jsonl
+    ifbench: Benchmark/IFBench/data/IFBench_test.jsonl
+    muldimif: Benchmark/MulDimIF/Data/test.json
+  output_dir: ./output/benchmark_eval
+  batch_size: 32
+  save_outputs: true
+  max_samples: 0
+  muldimif_max_length: 2048

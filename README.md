@@ -1,18 +1,15 @@
 <div align='center'>
-<h2>Rubrics to Tokens: Bridging Response-level Rubrics and Token-level Rewards in Instruction Following Tasks</h2>
+<h2>Rubrics to Tokens: Bridging Response-level Rubrics and <br> Token-level Rewards in Instruction Following Tasks</h2>
+
 
 [![Paper](https://img.shields.io/badge/paper-5f16a8?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/TODO)
 </div>
 
 ## Overview
 
-Rubric-based Reinforcement Learning (RL) has emerged as a promising approach for aligning LLMs with complex, open-domain instruction following tasks. However, existing methods predominantly rely on response-level rewards, which suffer from two fundamental problems: **reward sparsity** (binary all-or-nothing rewards leave the model without meaningful gradient signals when it cannot satisfy all constraints) and **reward ambiguity** (aggregated rewards fail to distinguish which tokens are responsible for constraint violations).
+**Rubric-based Reinforcement Learning (RL)** has emerged as a promising approach for aligning LLMs with complex, open-domain instruction following tasks. However, existing methods predominantly rely on response-level rewards, which suffer from two fundamental problems: **reward sparsity** (binary all-or-nothing rewards leave the model without meaningful gradient signals when it cannot satisfy all constraints) and **reward ambiguity** (aggregated rewards fail to distinguish which tokens are responsible for constraint violations).
 
-We propose **Rubrics to Tokens (RTT)**, a novel rubric-based RL framework that bridges coarse response-level scores and fine-grained token-level credit assignment. RTT is grounded in a straightforward hypothesis: for any specific constraint, only a subset of tokens plays a critical role in its satisfaction or violation. By introducing a **Token-Level Relevance Discriminator**, RTT predicts which tokens are responsible for each constraint and optimizes the policy via **RTT-GRPO**, which integrates response-level and token-level advantages within a unified framework.
-
-We further identify the **Group Partitioning Problem** — a normalization design challenge arising when transitioning from one-dimensional outcome rewards to a three-dimensional token-level rubric reward space — and propose **Intra-sample Token Group Normalization** to address it.
-
-Extensive experiments demonstrate that RTT consistently outperforms all baselines in both instruction-level and rubric-level accuracy across multiple models and benchmarks, while preserving general capabilities.
+We propose **Rubrics to Tokens (RTT)**, a novel rubric-based RL framework that bridges coarse response-level scores and fine-grained token-level credit assignment. RTT is grounded in a straightforward hypothesis: for any specific constraint, only a subset of tokens plays a critical role in its satisfaction or violation. By introducing a **Token-Level Relevance Discriminator**, RTT predicts which tokens are responsible for each constraint and optimizes the policy via **RTT-GRPO**, which integrates response-level and token-level advantages within a unified framework. We further identify the **Group Partitioning Problem**, a normalization design challenge arising when transitioning from one-dimensional outcome rewards to a three-dimensional token-level rubric reward space, and propose **Intra-sample Token Group Normalization** to address it. Extensive experiments demonstrate that RTT consistently outperforms all baselines in both instruction-level and rubric-level accuracy across multiple models and benchmarks, while preserving general capabilities.
 
 ![RTT Framework](./assets/overview.png)
 

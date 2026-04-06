@@ -2,7 +2,7 @@
 <h2>Rubrics to Tokens: Bridging Response-level Rubrics and <br> Token-level Rewards in Instruction Following Tasks</h2>
 
 
-[![Paper](https://img.shields.io/badge/paper-5f16a8?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/TODO)
+[![Paper](https://img.shields.io/badge/paper-5f16a8?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2604.02795)
 </div>
 
 ## Overview

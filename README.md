@@ -5,6 +5,10 @@
 [![Paper](https://img.shields.io/badge/paper-5f16a8?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2604.02795)
 </div>
 
+## Updates
+
+- **2026-04-09**: Added the training framework for the Token-Level Relevance Discriminator, built on [OpenRLHF](https://github.com/OpenRLHF/OpenRLHF). See [`OpenRLHF/README_TOKEN_LEVEL_VALUE.md`](./OpenRLHF/README_TOKEN_LEVEL_VALUE.md) for details.
+
 ## Overview
 
 **Rubric-based Reinforcement Learning (RL)** has emerged as a promising approach for aligning LLMs with complex, open-domain instruction following tasks. However, existing methods predominantly rely on response-level rewards, which suffer from two fundamental problems: **reward sparsity** (binary all-or-nothing rewards leave the model without meaningful gradient signals when it cannot satisfy all constraints) and **reward ambiguity** (aggregated rewards fail to distinguish which tokens are responsible for constraint violations).

@@ -3,6 +3,7 @@
 
 
 [![Paper](https://img.shields.io/badge/paper-5f16a8?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2604.02795)
+[![Huggingface](https://img.shields.io/badge/HuggingFace-f1a72c?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/papers/2604.02795)
 </div>
 
 ## Updates

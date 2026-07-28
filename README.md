@@ -7,7 +7,7 @@
 </div>
 
 ## Updates
-- **2026-07-09**: 🎉 ResearcherBench has been accepted by COLM 2026!
+- **2026-07-09**: 🎉 Rubrics to Tokens has been accepted by COLM 2026!
 - **2026-04-09**: Added the training framework for the Token-Level Relevance Discriminator, built on [OpenRLHF](https://github.com/OpenRLHF/OpenRLHF). See [`OpenRLHF/README_TOKEN_LEVEL_VALUE.md`](./OpenRLHF/README_TOKEN_LEVEL_VALUE.md) for details.
 
 ## Overview
